@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: build-multiarch-
+spec:
+  pipelineRef:
+    name: build-multiarch
+  params:
+  - name: git-url
+    value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
+  - name: docker-image-name
+    value: quay.io/nmasse_itix/htop-multiarch
+  workspaces:
+  - name: container-storage
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+  - name: source-workspace
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Gi
+  taskRunTemplate:
+    serviceAccountName: buildbot
+  taskRunSpecs:
+  - pipelineTaskName: podman-build-amd64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+  - pipelineTaskName: podman-build-arm64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: arm64

@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-multiarch
+spec:
+
+  workspaces:
+  - name: source-workspace
+  - name: container-storage
+
+  params:
+  - name: git-url
+    type: string
+  - name: docker-image-name
+    type: string
+  - name: manifest-name
+    type: string
+    default: "tekton"
+
+  tasks:
+
+  - name: clone-repo
+    taskRef:
+      kind: ClusterTask
+      name: git-clone
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: revision
+      value: "main"
+    workspaces:
+    - name: output
+      workspace: source-workspace
+  
+  - name: podman-build-amd64
+    runAfter: ["clone-repo"]
+    taskRef:
+      name: podman-build
+    params:
+    - name: manifest-name
+      value: $(params.manifest-name)
+    - name: arch
+      value: "amd64"
+    workspaces:
+    - name: source-workspace
+      workspace: source-workspace
+    - name: container-storage
+      workspace: container-storage
+  
+  - name: podman-build-arm64
+    runAfter: ["clone-repo"]
+    taskRef:
+      name: podman-build
+    params:
+    - name: manifest-name
+      value: $(params.manifest-name)
+    - name: arch
+      value: "arm64"
+    workspaces:
+    - name: source-workspace
+      workspace: source-workspace
+    - name: container-storage
+      workspace: container-storage
+
+  - name: push-image
+    runAfter: ["podman-build-amd64", "podman-build-arm64"]
+    taskRef:
+      name: buildah-push
+    params:
+    - name: image-name
+      value: $(params.docker-image-name)
+    - name: manifest-name
+      value: $(params.manifest-name)
+    workspaces:
+    - name: container-storage
+      workspace: container-storage

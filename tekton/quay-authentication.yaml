@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: quay-authentication
+data:
+    .dockerconfigjson: REDACTED
+type: kubernetes.io/dockerconfigjson

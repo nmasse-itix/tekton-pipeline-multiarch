@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: podman-build
+spec:
+  params:
+  - name: manifest-name
+    type: string
+  - name: context-dir
+    type: string
+    default: .
+  - name: arch
+    type: string
+  workspaces:
+  - name: source-workspace
+    description: Workspace containing source code
+  - name: container-storage
+    description: Persistent volume to store container images
+    mountPath: /var/lib/containers
+  steps:
+  - name: build
+    image: quay.io/podman/stable
+    script: |
+      #!/bin/bash
+      set -Eeuo pipefail
+      export STORAGE_DRIVER=vfs
+      podman build --no-cache --manifest $(params.manifest-name) $(workspaces.source-workspace.path)/$(params.context-dir)
