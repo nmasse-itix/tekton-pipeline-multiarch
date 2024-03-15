@@ -1,0 +1,7 @@
+FROM quay.io/fedora/fedora:39
+
+RUN dnf install -y htop \
+ && dnf clean all
+
+ENTRYPOINT [ "/usr/bin/htop" ]
+CMD []
