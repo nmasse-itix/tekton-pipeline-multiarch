@@ -9,8 +9,6 @@ spec:
   - name: context-dir
     type: string
     default: .
-  - name: arch
-    type: string
   workspaces:
   - name: source-workspace
     description: Workspace containing source code
@@ -19,9 +17,13 @@ spec:
     mountPath: /var/lib/containers
   steps:
   - name: build
-    image: quay.io/podman/stable
+    image: registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591
     script: |
       #!/bin/bash
       set -Eeuo pipefail
-      export STORAGE_DRIVER=vfs
-      podman build --no-cache --manifest $(params.manifest-name) $(workspaces.source-workspace.path)/$(params.context-dir)
+      buildah bud --storage-driver=vfs --no-cache --manifest $(params.manifest-name) $(workspaces.source-workspace.path)/$(params.context-dir)
+      #podman build --no-cache --manifest $(params.manifest-name) $(workspaces.source-workspace.path)/$(params.context-dir)
+    securityContext:
+      capabilities:
+        add:
+          - SETFCAP

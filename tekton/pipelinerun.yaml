@@ -10,6 +10,8 @@ spec:
     value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
   - name: docker-image-name
     value: quay.io/nmasse_itix/htop-multiarch
+  - name: context-dir
+    value: src
   workspaces:
   - name: container-storage
     volumeClaimTemplate:

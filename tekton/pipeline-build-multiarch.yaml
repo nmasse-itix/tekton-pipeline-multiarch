@@ -16,6 +16,9 @@ spec:
   - name: manifest-name
     type: string
     default: "tekton"
+  - name: context-dir
+    type: string
+    default: "."
 
   tasks:
 
@@ -39,8 +42,8 @@ spec:
     params:
     - name: manifest-name
       value: $(params.manifest-name)
-    - name: arch
-      value: "amd64"
+    - name: context-dir
+      value: $(params.context-dir)
     workspaces:
     - name: source-workspace
       workspace: source-workspace
@@ -54,8 +57,8 @@ spec:
     params:
     - name: manifest-name
       value: $(params.manifest-name)
-    - name: arch
-      value: "arm64"
+    - name: context-dir
+      value: $(params.context-dir)
     workspaces:
     - name: source-workspace
       workspace: source-workspace
