@@ -1,5 +1,11 @@
 # Multi-architecture Tekton Pipeline
 
+## Tekton configuration
+
+```sh
+oc patch configmap/feature-flags -n openshift-pipelines --type=merge -p '{"data":{"disable-affinity-assistant":"true"}}'
+```
+
 ## Setup on AWS
 
 - [Install the AWS EFS CSI Driver Operator](https://docs.openshift.com/container-platform/4.15/storage/container_storage_interface/persistent-storage-csi-aws-efs.html#persistent-storage-csi-olm-operator-install_persistent-storage-csi-aws-efs)
@@ -31,3 +37,5 @@ parameters:
   directoryPerms: "700"
   basePath: "/pv"
 ```
+
+- [Create and configure access to EFS volumes in AWS](https://docs.openshift.com/container-platform/4.15/storage/container_storage_interface/persistent-storage-csi-aws-efs.html#efs-create-volume_persistent-storage-csi-aws-efs)
