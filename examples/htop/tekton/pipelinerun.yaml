@@ -1,17 +1,17 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  generateName: build-multiarch-
+  generateName: htop-
 spec:
   pipelineRef:
-    name: build-multiarch
+    name: htop
   params:
   - name: git-url
     value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
   - name: image-name
     value: quay.io/nmasse_itix/htop-multiarch
   - name: context-dir
-    value: src
+    value: examples/htop/src
   workspaces:
   - name: oci-images
     volumeClaimTemplate:
