@@ -6,12 +6,13 @@ spec:
 
   workspaces:
   - name: source-workspace
-  - name: container-storage
+  - name: oci-images
+  - name: registry-token
 
   params:
   - name: git-url
     type: string
-  - name: docker-image-name
+  - name: image-name
     type: string
   - name: manifest-name
     type: string
@@ -35,45 +36,45 @@ spec:
     - name: output
       workspace: source-workspace
   
-  - name: podman-build-amd64
+  - name: build-x86-64
     runAfter: ["clone-repo"]
     taskRef:
-      name: podman-build
+      name: buildah-build
     params:
-    - name: manifest-name
-      value: $(params.manifest-name)
     - name: context-dir
       value: $(params.context-dir)
     workspaces:
     - name: source-workspace
       workspace: source-workspace
-    - name: container-storage
-      workspace: container-storage
+    - name: oci-images
+      workspace: oci-images
   
-  - name: podman-build-arm64
+  - name: build-aarch64
     runAfter: ["clone-repo"]
     taskRef:
-      name: podman-build
+      name: buildah-build
     params:
-    - name: manifest-name
-      value: $(params.manifest-name)
     - name: context-dir
       value: $(params.context-dir)
     workspaces:
     - name: source-workspace
       workspace: source-workspace
-    - name: container-storage
-      workspace: container-storage
+    - name: oci-images
+      workspace: oci-images
 
   - name: push-image
-    runAfter: ["podman-build-amd64", "podman-build-arm64"]
+    runAfter: ["build-x86-64", "build-aarch64"]
     taskRef:
       name: buildah-push
     params:
     - name: image-name
-      value: $(params.docker-image-name)
-    - name: manifest-name
-      value: $(params.manifest-name)
+      value: $(params.image-name)
+    - name: architectures
+      value:
+      - x86_64
+      - aarch64
     workspaces:
-    - name: container-storage
-      workspace: container-storage
+    - name: oci-images
+      workspace: oci-images
+    - name: dockerconfig
+      workspace: registry-token

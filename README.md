@@ -36,6 +36,27 @@ parameters:
   fileSystemId: fs-123456
   directoryPerms: "700"
   basePath: "/pv"
+  uid: "0"
+  gid: "0"
 ```
 
 - [Create and configure access to EFS volumes in AWS](https://docs.openshift.com/container-platform/4.15/storage/container_storage_interface/persistent-storage-csi-aws-efs.html#efs-create-volume_persistent-storage-csi-aws-efs)
+
+## Authentication to the registry
+
+```sh
+oc create secret docker-registry quay-authentication --docker-email=nmasse@redhat.com --docker-username=nmasse --docker-password=REDACTED --docker-server=quay.io
+oc annotate secret/quay-authentication tekton.dev/docker-0=https://quay.io
+```
+
+## Pipeline manifests
+
+```sh
+oc apply -k tekton/
+```
+
+## Run it!
+
+```sh
+oc create -f tekton/pipelinerun.yaml
+```

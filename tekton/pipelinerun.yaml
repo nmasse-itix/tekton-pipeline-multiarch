@@ -8,12 +8,12 @@ spec:
   params:
   - name: git-url
     value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
-  - name: docker-image-name
+  - name: image-name
     value: quay.io/nmasse_itix/htop-multiarch
   - name: context-dir
     value: src
   workspaces:
-  - name: container-storage
+  - name: oci-images
     volumeClaimTemplate:
       spec:
         storageClassName: efs-csi
@@ -31,14 +31,17 @@ spec:
         resources:
           requests:
             storage: 1Gi
+  - name: registry-token
+    secret:
+      secretName: quay-authentication
   taskRunTemplate:
     serviceAccountName: buildbot
   taskRunSpecs:
-  - pipelineTaskName: podman-build-amd64
+  - pipelineTaskName: build-x86-64
     podTemplate:
       nodeSelector:
         beta.kubernetes.io/arch: amd64
-  - pipelineTaskName: podman-build-arm64
+  - pipelineTaskName: build-aarch64
     podTemplate:
       nodeSelector:
         beta.kubernetes.io/arch: arm64

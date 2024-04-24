@@ -1,0 +1,59 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: buildah-push
+spec:
+  params:
+  - name: image-name
+    type: string
+  - name: architectures
+    type: array
+  workspaces:
+  - name: oci-images
+    mountPath: /srv/oci-images
+  - description: An optional workspace that allows providing a .docker/config.json file for Buildah to access the container registry. The file should be placed at the root of the Workspace with name config.json or .dockerconfigjson.
+    name: dockerconfig
+    optional: true
+  volumes:
+  - name: container-storage
+    emptyDir: {}
+  steps:
+  - name: push
+    image: registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591
+    env:
+    - name: STORAGE_DRIVER
+      value: vfs
+    args:
+    - "$(params.architectures[*])"
+    script: |
+      #!/bin/bash
+      set -Eeuo pipefail
+
+      # Handle registry credentials
+      if [[ "$(workspaces.dockerconfig.bound)" == "true" ]]; then
+        if test -f "$(workspaces.dockerconfig.path)/config.json"; then
+          export DOCKER_CONFIG="$(workspaces.dockerconfig.path)"
+        elif test -f "$(workspaces.dockerconfig.path)/.dockerconfigjson"; then
+          cp "$(workspaces.dockerconfig.path)/.dockerconfigjson" "$HOME/.docker/config.json"
+          export DOCKER_CONFIG="$HOME/.docker"
+        else
+          echo "neither 'config.json' nor '.dockerconfigjson' found at workspace root"
+          exit 1
+        fi
+      fi
+
+      declare -a iids=()
+      for arch; do
+        echo "Loading image for architecture $arch..."
+        iid=$(buildah pull oci-archive:/srv/oci-images/$arch.tar)
+        iids+=("$iid")
+      done
+      buildah manifest create localhost/multi-arch-image "${iids[@]}"
+      buildah manifest push --all localhost/multi-arch-image docker://$(params.image-name)
+    securityContext:
+      capabilities:
+        add:
+          - SETFCAP
+    volumeMounts:
+    - name: container-storage
+      mountPath: /var/lib/containers

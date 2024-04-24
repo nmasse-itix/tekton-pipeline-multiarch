@@ -1,29 +1,35 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: podman-build
+  name: buildah-build
 spec:
   params:
-  - name: manifest-name
-    type: string
   - name: context-dir
     type: string
     default: .
   workspaces:
   - name: source-workspace
     description: Workspace containing source code
+  - name: oci-images
+    mountPath: /srv/oci-images
+  volumes:
   - name: container-storage
-    description: Persistent volume to store container images
-    mountPath: /var/lib/containers
+    emptyDir: {}
   steps:
   - name: build
     image: registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591
+    env:
+    - name: STORAGE_DRIVER
+      value: vfs
     script: |
       #!/bin/bash
       set -Eeuo pipefail
-      buildah bud --storage-driver=vfs --no-cache --manifest $(params.manifest-name) $(workspaces.source-workspace.path)/$(params.context-dir)
-      #podman build --no-cache --manifest $(params.manifest-name) $(workspaces.source-workspace.path)/$(params.context-dir)
+      buildah bud -t localhost/image:$(uname -m) $(workspaces.source-workspace.path)/$(params.context-dir)
+      buildah push localhost/image:$(uname -m) oci-archive:/srv/oci-images/$(uname -m).tar
     securityContext:
       capabilities:
         add:
           - SETFCAP
+    volumeMounts:
+    - name: container-storage
+      mountPath: /var/lib/containers
