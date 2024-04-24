@@ -1,0 +1,59 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: quarkus-getting-started-
+spec:
+  pipelineRef:
+    name: quarkus-getting-started
+  params:
+  - name: git-url
+    value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
+  - name: image-name
+    value: quay.io/nmasse_itix/quarkus-getting-started-multiarch
+  - name: context-dir
+    value: examples/quarkus/src
+  - name: containerfile-path
+    value: examples/quarkus/src/src/main/docker/Dockerfile.jvm
+  workspaces:
+  - name: oci-images
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+  - name: sources
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Gi
+  - name: maven-settings
+    emptyDir: {}
+  - name: registry-token
+    secret:
+      secretName: quay-authentication
+  taskRunTemplate:
+    serviceAccountName: buildbot
+  taskRunSpecs:
+  - pipelineTaskName: maven-package-x86-64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+  - pipelineTaskName: maven-package-aarch64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: arm64
+  - pipelineTaskName: build-x86-64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+  - pipelineTaskName: build-aarch64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: arm64

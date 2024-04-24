@@ -19,7 +19,7 @@ spec:
     emptyDir: {}
   steps:
   - name: push
-    image: registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591
+    image: registry.redhat.io/rhel8/buildah:8.9
     env:
     - name: STORAGE_DRIVER
       value: vfs

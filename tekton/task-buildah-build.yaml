@@ -7,6 +7,9 @@ spec:
   - name: context-dir
     type: string
     default: .
+  - name: containerfile-path
+    type: string
+    default: Containerfile
   workspaces:
   - name: source-workspace
     description: Workspace containing source code
@@ -17,14 +20,14 @@ spec:
     emptyDir: {}
   steps:
   - name: build
-    image: registry.redhat.io/rhel8/buildah@sha256:b48f410efa0ff8ab0db6ead420a5d8d866d64af846fece5efb185230d7ecf591
+    image: registry.redhat.io/rhel8/buildah:8.9
     env:
     - name: STORAGE_DRIVER
       value: vfs
     script: |
       #!/bin/bash
       set -Eeuo pipefail
-      buildah bud -t localhost/image:$(uname -m) $(workspaces.source-workspace.path)/$(params.context-dir)
+      buildah bud -t localhost/image:$(uname -m) -f $(workspaces.source-workspace.path)/$(params.containerfile-path) $(workspaces.source-workspace.path)/$(params.context-dir)
       buildah push localhost/image:$(uname -m) oci-archive:/srv/oci-images/$(uname -m).tar
     securityContext:
       capabilities:

@@ -1,0 +1,132 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: quarkus-getting-started
+spec:
+
+  workspaces:
+  - name: sources
+  - name: oci-images
+  - name: registry-token
+  - name: maven-settings
+
+  params:
+  - name: git-url
+    type: string
+  - name: image-name
+    type: string
+  - name: context-dir
+    type: string
+    default: "."
+  - name: containerfile-path
+    type: string
+    default: "Containerfile"
+
+  tasks:
+
+  - name: clone-repo-x86-64
+    taskRef:
+      kind: ClusterTask
+      name: git-clone
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: revision
+      value: "main"
+    workspaces:
+    - name: output
+      workspace: sources
+      subPath: src-x86_64
+
+  - name: clone-repo-aarch64
+    taskRef:
+      kind: ClusterTask
+      name: git-clone
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: revision
+      value: "main"
+    workspaces:
+    - name: output
+      workspace: sources
+      subPath: src-aarch64
+
+  - name: maven-package-x86-64
+    runAfter: ["clone-repo-x86-64"]
+    taskRef:
+      kind: ClusterTask
+      name: maven
+    params:
+    - name: CONTEXT_DIR
+      value: $(params.context-dir)
+    workspaces:
+    - name: source
+      workspace: sources
+      subPath: src-x86_64
+    - name: maven-settings
+      workspace: maven-settings
+
+  - name: maven-package-aarch64
+    runAfter: ["clone-repo-aarch64"]
+    taskRef:
+      kind: ClusterTask
+      name: maven
+    params:
+    - name: CONTEXT_DIR
+      value: $(params.context-dir)
+    workspaces:
+    - name: source
+      workspace: sources
+      subPath: src-aarch64
+    - name: maven-settings
+      workspace: maven-settings
+
+  - name: build-x86-64
+    runAfter: ["maven-package-x86-64"]
+    taskRef:
+      name: buildah-build
+    params:
+    - name: context-dir
+      value: $(params.context-dir)
+    - name: containerfile-path
+      value: $(params.containerfile-path)
+    workspaces:
+    - name: source-workspace
+      workspace: sources
+      subPath: src-aarch64
+    - name: oci-images
+      workspace: oci-images
+  
+  - name: build-aarch64
+    runAfter: ["maven-package-aarch64"]
+    taskRef:
+      name: buildah-build
+    params:
+    - name: context-dir
+      value: $(params.context-dir)
+    - name: containerfile-path
+      value: $(params.containerfile-path)
+    workspaces:
+    - name: source-workspace
+      workspace: sources
+      subPath: src-aarch64
+    - name: oci-images
+      workspace: oci-images
+
+  - name: push-image
+    runAfter: ["build-x86-64", "build-aarch64"]
+    taskRef:
+      name: buildah-push
+    params:
+    - name: image-name
+      value: $(params.image-name)
+    - name: architectures
+      value:
+      - x86_64
+      - aarch64
+    workspaces:
+    - name: oci-images
+      workspace: oci-images
+    - name: dockerconfig
+      workspace: registry-token

@@ -14,9 +14,6 @@ spec:
     type: string
   - name: image-name
     type: string
-  - name: manifest-name
-    type: string
-    default: "tekton"
   - name: context-dir
     type: string
     default: "."
