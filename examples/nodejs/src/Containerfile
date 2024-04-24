@@ -1,0 +1,6 @@
+FROM registry.access.redhat.com/ubi9/nodejs-20
+
+COPY [ "node_modules", "/opt/app-root/src/node_modules" ]
+COPY [ "index.js", "/opt/app-root/src/index.js" ]
+ENTRYPOINT [ "/usr/bin/node" ]
+CMD [ "index.js" ]
