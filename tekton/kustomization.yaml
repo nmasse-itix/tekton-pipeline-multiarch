@@ -2,3 +2,4 @@ resources:
 - serviceaccount-buildbot.yaml
 - task-buildah-build.yaml
 - task-buildah-push.yaml
+- task-npm-install.yaml

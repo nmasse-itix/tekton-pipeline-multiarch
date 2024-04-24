@@ -1,0 +1,57 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: nodejs-hello-world-
+spec:
+  pipelineRef:
+    name: nodejs-hello-world
+  params:
+  - name: git-url
+    value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
+  - name: image-name
+    value: quay.io/nmasse_itix/nodejs-hello-world-multiarch
+  - name: context-dir
+    value: examples/nodejs/src
+  - name: containerfile-path
+    value: examples/nodejs/src/Containerfile
+  workspaces:
+  - name: oci-images
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+  - name: sources
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Gi
+  - name: registry-token
+    secret:
+      secretName: quay-authentication
+  taskRunTemplate:
+    serviceAccountName: buildbot
+  taskRunSpecs:
+  - pipelineTaskName: npm-install-x86-64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+  - pipelineTaskName: npm-install-aarch64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: arm64
+  - pipelineTaskName: build-x86-64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+  - pipelineTaskName: build-aarch64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: arm64
