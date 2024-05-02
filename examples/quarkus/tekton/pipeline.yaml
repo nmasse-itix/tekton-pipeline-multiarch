@@ -24,7 +24,7 @@ spec:
 
   tasks:
 
-  - name: clone-repo-x86-64
+  - name: clone-repo
     taskRef:
       kind: ClusterTask
       name: git-clone
@@ -36,24 +36,9 @@ spec:
     workspaces:
     - name: output
       workspace: sources
-      subPath: src-x86_64
 
-  - name: clone-repo-aarch64
-    taskRef:
-      kind: ClusterTask
-      name: git-clone
-    params:
-    - name: url
-      value: $(params.git-url)
-    - name: revision
-      value: "main"
-    workspaces:
-    - name: output
-      workspace: sources
-      subPath: src-aarch64
-
-  - name: maven-package-x86-64
-    runAfter: ["clone-repo-x86-64"]
+  - name: maven-package
+    runAfter: ["clone-repo"]
     taskRef:
       kind: ClusterTask
       name: maven
@@ -63,27 +48,11 @@ spec:
     workspaces:
     - name: source
       workspace: sources
-      subPath: src-x86_64
-    - name: maven-settings
-      workspace: maven-settings
-
-  - name: maven-package-aarch64
-    runAfter: ["clone-repo-aarch64"]
-    taskRef:
-      kind: ClusterTask
-      name: maven
-    params:
-    - name: CONTEXT_DIR
-      value: $(params.context-dir)
-    workspaces:
-    - name: source
-      workspace: sources
-      subPath: src-aarch64
     - name: maven-settings
       workspace: maven-settings
 
   - name: build-x86-64
-    runAfter: ["maven-package-x86-64"]
+    runAfter: ["maven-package"]
     taskRef:
       name: buildah-build
     params:
@@ -94,12 +63,11 @@ spec:
     workspaces:
     - name: source-workspace
       workspace: sources
-      subPath: src-aarch64
     - name: oci-images
       workspace: oci-images
   
   - name: build-aarch64
-    runAfter: ["maven-package-aarch64"]
+    runAfter: ["maven-package"]
     taskRef:
       name: buildah-build
     params:
@@ -110,7 +78,6 @@ spec:
     workspaces:
     - name: source-workspace
       workspace: sources
-      subPath: src-aarch64
     - name: oci-images
       workspace: oci-images
 

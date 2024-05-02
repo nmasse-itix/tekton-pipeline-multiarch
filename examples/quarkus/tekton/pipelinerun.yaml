@@ -41,14 +41,6 @@ spec:
   taskRunTemplate:
     serviceAccountName: buildbot
   taskRunSpecs:
-  - pipelineTaskName: maven-package-x86-64
-    podTemplate:
-      nodeSelector:
-        beta.kubernetes.io/arch: amd64
-  - pipelineTaskName: maven-package-aarch64
-    podTemplate:
-      nodeSelector:
-        beta.kubernetes.io/arch: arm64
   - pipelineTaskName: build-x86-64
     podTemplate:
       nodeSelector:
