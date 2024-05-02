@@ -17,6 +17,9 @@ spec:
   - name: context-dir
     type: string
     default: "."
+  - name: containerfile-path
+    type: string
+    default: "Containerfile"
 
   tasks:
 
@@ -40,6 +43,8 @@ spec:
     params:
     - name: context-dir
       value: $(params.context-dir)
+    - name: containerfile-path
+      value: $(params.containerfile-path)
     workspaces:
     - name: source-workspace
       workspace: source-workspace
@@ -53,6 +58,8 @@ spec:
     params:
     - name: context-dir
       value: $(params.context-dir)
+    - name: containerfile-path
+      value: $(params.containerfile-path)
     workspaces:
     - name: source-workspace
       workspace: source-workspace

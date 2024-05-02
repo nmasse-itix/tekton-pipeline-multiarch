@@ -53,10 +53,11 @@ oc annotate secret/quay-authentication tekton.dev/docker-0=https://quay.io
 
 ```sh
 oc apply -k tekton/
+for yaml in examples/*/tekton/pipeline.yaml; do oc apply -f $yaml; done
 ```
 
 ## Run it!
 
 ```sh
-oc create -f tekton/pipelinerun.yaml
+for yaml in examples/*/tekton/pipelinerun.yaml; do oc create -f $yaml; done
 ```

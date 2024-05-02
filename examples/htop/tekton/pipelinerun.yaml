@@ -12,6 +12,8 @@ spec:
     value: quay.io/nmasse_itix/htop-multiarch
   - name: context-dir
     value: examples/htop/src
+  - name: containerfile-path
+    value: "examples/htop/src/Containerfile"
   workspaces:
   - name: oci-images
     volumeClaimTemplate:
