@@ -9,7 +9,7 @@ spec:
   - name: git-url
     value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
   - name: image-name
-    value: quay.io/nmasse_itix/quarkus-getting-started-multiarch
+    value: quay.io/nmasse-redhat/quarkus-getting-started-multiarch
   - name: context-dir
     value: examples/quarkus/src
   - name: containerfile-path
@@ -41,11 +41,11 @@ spec:
   taskRunTemplate:
     serviceAccountName: buildbot
   taskRunSpecs:
-  - pipelineTaskName: build-x86-64
-    podTemplate:
-      nodeSelector:
-        beta.kubernetes.io/arch: amd64
   - pipelineTaskName: build-aarch64
     podTemplate:
       nodeSelector:
         beta.kubernetes.io/arch: arm64
+      tolerations:
+      - key: "emea-open-demo.redhat.com/arm64-architecture"
+        operator: "Exists"
+        effect: "NoSchedule"

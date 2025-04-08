@@ -3,3 +3,5 @@ resources:
 - task-buildah-build.yaml
 - task-buildah-push.yaml
 - task-npm-install.yaml
+- task-git-clone.yaml
+- task-maven.yaml

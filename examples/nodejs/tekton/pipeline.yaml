@@ -25,7 +25,7 @@ spec:
 
   - name: clone-repo-x86-64
     taskRef:
-      kind: ClusterTask
+      kind: Task
       name: git-clone
     params:
     - name: url
@@ -39,7 +39,7 @@ spec:
 
   - name: clone-repo-aarch64
     taskRef:
-      kind: ClusterTask
+      kind: Task
       name: git-clone
     params:
     - name: url

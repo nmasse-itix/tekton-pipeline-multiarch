@@ -9,7 +9,7 @@ spec:
   - name: git-url
     value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
   - name: image-name
-    value: quay.io/nmasse_itix/nodejs-hello-world-multiarch
+    value: quay.io/nmasse-redhat/nodejs-hello-world-multiarch
   - name: context-dir
     value: examples/nodejs/src
   - name: containerfile-path
@@ -39,19 +39,19 @@ spec:
   taskRunTemplate:
     serviceAccountName: buildbot
   taskRunSpecs:
-  - pipelineTaskName: npm-install-x86-64
-    podTemplate:
-      nodeSelector:
-        beta.kubernetes.io/arch: amd64
   - pipelineTaskName: npm-install-aarch64
     podTemplate:
       nodeSelector:
         beta.kubernetes.io/arch: arm64
-  - pipelineTaskName: build-x86-64
-    podTemplate:
-      nodeSelector:
-        beta.kubernetes.io/arch: amd64
+      tolerations:
+      - key: "emea-open-demo.redhat.com/arm64-architecture"
+        operator: "Exists"
+        effect: "NoSchedule"
   - pipelineTaskName: build-aarch64
     podTemplate:
       nodeSelector:
         beta.kubernetes.io/arch: arm64
+      tolerations:
+      - key: "emea-open-demo.redhat.com/arm64-architecture"
+        operator: "Exists"
+        effect: "NoSchedule"

@@ -26,7 +26,7 @@ spec:
 
   - name: clone-repo
     taskRef:
-      kind: ClusterTask
+      kind: Task
       name: git-clone
     params:
     - name: url
@@ -40,11 +40,14 @@ spec:
   - name: maven-package
     runAfter: ["clone-repo"]
     taskRef:
-      kind: ClusterTask
+      kind: Task
       name: maven
     params:
     - name: CONTEXT_DIR
       value: $(params.context-dir)
+    - name: GOALS
+      value:
+      - package
     workspaces:
     - name: source
       workspace: sources
