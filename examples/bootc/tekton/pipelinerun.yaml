@@ -1,0 +1,51 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: bootc-
+spec:
+  pipelineRef:
+    name: bootc
+  params:
+  - name: git-url
+    value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
+  - name: git-revision
+    value: devoxx-france-2025
+  - name: image-name
+    value: quay.io/nmasse-redhat/fedora-with-htop
+  - name: context-dir
+    value: examples/bootc/src
+  - name: containerfile-path
+    value: "examples/bootc/src/Containerfile"
+  workspaces:
+  - name: oci-images
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 10Gi
+  - name: source-workspace
+    volumeClaimTemplate:
+      spec:
+        storageClassName: efs-csi
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: 1Gi
+  - name: registry-token
+    secret:
+      secretName: quay-authentication
+  taskRunTemplate:
+    serviceAccountName: buildbot
+  taskRunSpecs:
+  - pipelineTaskName: build-aarch64
+    podTemplate:
+      nodeSelector:
+        beta.kubernetes.io/arch: arm64
+      tolerations:
+      - key: "emea-open-demo.redhat.com/arm64-architecture"
+        operator: "Exists"
+        effect: "NoSchedule"
