@@ -8,6 +8,8 @@ spec:
   params:
   - name: git-url
     value: https://github.com/nmasse-itix/tekton-pipeline-multiarch.git
+  - name: git-revision
+    value: devoxx-france-2025
   - name: image-name
     value: quay.io/nmasse-redhat/nodejs-hello-world-multiarch
   - name: context-dir

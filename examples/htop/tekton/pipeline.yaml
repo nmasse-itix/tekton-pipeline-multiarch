@@ -12,6 +12,9 @@ spec:
   params:
   - name: git-url
     type: string
+  - name: git-revision
+    type: string
+    default: main
   - name: image-name
     type: string
   - name: context-dir

@@ -1,4 +1,21 @@
 FROM quay.io/fedora/fedora-bootc:41
 
-RUN dnf install -y htop \
- && dnf clean all
+RUN <<EOF
+set -Eeuo pipefail
+
+# Install HTOP
+dnf install -y htop
+dnf clean all
+
+# Change root password
+echo root | passwd --stdin
+EOF
+
+# Update (later in the demo)
+#RUN <<EOF
+#set -Eeuo pipefail
+#
+#mkdir /opt/devoxx-2025
+#echo 'Hello, world!' > /opt/devoxx-2025/hello
+#EOF
+
